@@ -240,9 +240,13 @@ pub struct Dav1dContentLightLevel {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct Dav1dMasteringDisplay {
+    #[doc = "< 0.16 fixed point"]
     pub primaries: [[u16; 2usize]; 3usize],
+    #[doc = "< 0.16 fixed point"]
     pub white_point: [u16; 2usize],
+    #[doc = "< 24.8 fixed point"]
     pub max_luminance: u32,
+    #[doc = "< 18.14 fixed point"]
     pub min_luminance: u32,
 }
 #[repr(C)]
