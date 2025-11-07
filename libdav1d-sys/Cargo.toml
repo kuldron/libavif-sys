@@ -8,7 +8,6 @@ links = "dav1d"
 description = "Builds and statically links dav1d AV1 decoder. Part of libavif-sys"
 keywords = ["ffi", "codec", "dav1d", "david", "AV1"]
 repository = "https://github.com/njaard/libavif-rs"
-documentation = "https://docs.rs/libavif-sys"
 license = "BSD-2-Clause"
 
 [dependencies]

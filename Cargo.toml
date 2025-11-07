@@ -8,7 +8,6 @@ description = "High-level API for AVIF image files"
 keywords = ["codec", "image","avif", "AV1"]
 categories = ["multimedia::video", "multimedia::images"]
 repository = "https://github.com/njaard/libavif-rs"
-documentation = "https://docs.rs/libavif"
 license = "BSD-2-Clause"
 readme = "README.md"
 
