@@ -2,7 +2,7 @@
 name = "libavif-image"
 version = "0.13.1"
 authors = ["Charles Samuels <ks@ks.ax>", "Paolo Barbolini <paolo@paolo565.org>"]
-edition = "2021"
+edition = "2024"
 rust-version = "1.85"
 description = "Load AVIF files into the `image` crate"
 keywords = ["codec", "image", "avif", "AV1"]

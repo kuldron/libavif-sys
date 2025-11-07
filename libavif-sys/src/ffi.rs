@@ -689,7 +689,7 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn avifDecoderSetSource(decoder: *mut avifDecoder, source: avifDecoderSource)
-        -> avifResult;
+    -> avifResult;
 }
 unsafe extern "C" {
     pub fn avifDecoderSetIO(decoder: *mut avifDecoder, io: *mut avifIO);

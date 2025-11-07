@@ -59,7 +59,9 @@ fn main() {
             }
         }
         Err(err) => {
-            println!("cargo:warning=This crate requires meson (and ninja) to be installed: https://mesonbuild.com/");
+            println!(
+                "cargo:warning=This crate requires meson (and ninja) to be installed: https://mesonbuild.com/"
+            );
             println!("cargo:warning=meson: {err}");
             std::process::exit(2);
         }

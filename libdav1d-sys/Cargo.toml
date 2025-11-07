@@ -2,7 +2,7 @@
 name = "libdav1d-sys"
 version = "0.7.1+libdav1d.1.4.3"
 authors = ["Charles Samuels <ks@ks.ax>", "Paolo Barbolini <paolo@paolo565.org>", "Kornel <kornel@geekhood.net>"]
-edition = "2021"
+edition = "2024"
 build = "build.rs"
 links = "dav1d"
 description = "Builds and statically links dav1d AV1 decoder. Part of libavif-sys"
