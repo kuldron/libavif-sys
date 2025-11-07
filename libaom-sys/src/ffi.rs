@@ -35,6 +35,7 @@ pub const AOM_CODEC_USE_PSNR: u32 = 65536;
 pub const AOM_CODEC_USE_HIGHBITDEPTH: u32 = 262144;
 pub const AOM_ERROR_RESILIENT_DEFAULT: u32 = 1;
 pub const AOM_EFLAG_FORCE_KF: u32 = 1;
+pub const AOM_EFLAG_CALCULATE_PSNR: u32 = 2;
 pub const AOM_USAGE_GOOD_QUALITY: u32 = 0;
 pub const AOM_USAGE_REALTIME: u32 = 1;
 pub const AOM_USAGE_ALL_INTRA: u32 = 2;
@@ -58,6 +59,8 @@ pub const AOM_EFLAG_ERROR_RESILIENT: u32 = 268435456;
 pub const AOM_EFLAG_SET_S_FRAME: u32 = 536870912;
 pub const AOM_EFLAG_SET_PRIMARY_REF_NONE: u32 = 1073741824;
 pub const AOM_MAX_SEGMENTS: u32 = 8;
+pub const AOM_HAVE_TUNE_IQ: u32 = 1;
+pub const AOM_HAVE_TUNE_SSIMULACRA2: u32 = 1;
 pub const AOM_MAX_LAYERS: u32 = 32;
 pub const AOM_MAX_SS_LAYERS: u32 = 4;
 pub const AOM_MAX_TS_LAYERS: u32 = 8;
@@ -1474,11 +1477,11 @@ pub const AOME_SET_ACTIVEMAP: aome_enc_control_id = 9;
 pub const AOME_SET_SCALEMODE: aome_enc_control_id = 11;
 #[doc = "Codec control function to set encoder spatial layer id, int\n parameter."]
 pub const AOME_SET_SPATIAL_LAYER_ID: aome_enc_control_id = 12;
-#[doc = "Codec control function to set encoder internal speed settings,\n int parameter\n\n Changes in this value influences the complexity of algorithms used in\n encoding process, values greater than 0 will increase encoder speed at\n the expense of quality.\n\n Valid range: 0..11. 0 runs the slowest, and 11 runs the fastest;\n quality improves as speed decreases (since more compression\n possibilities are explored).\n\n NOTE: 10 and 11 are only allowed in AOM_USAGE_REALTIME. In\n AOM_USAGE_GOOD_QUALITY and AOM_USAGE_ALL_INTRA, 9 is the highest allowed\n value. However, AOM_USAGE_GOOD_QUALITY treats 7..9 the same as 6. Also,\n AOM_USAGE_REALTIME treats 0..4 the same as 5."]
+#[doc = "Codec control function to set encoder internal speed settings,\n int parameter\n\n Changes in this value influences the complexity of algorithms used in\n encoding process, values greater than 0 will increase encoder speed at\n the expense of quality.\n\n Valid range: 0..12. 0 runs the slowest, and 12 runs the fastest;\n quality improves as speed decreases (since more compression\n possibilities are explored).\n\n NOTE: 10 - 12 are only allowed in AOM_USAGE_REALTIME. In\n AOM_USAGE_GOOD_QUALITY and AOM_USAGE_ALL_INTRA, 9 is the highest allowed\n value. However, AOM_USAGE_GOOD_QUALITY treats 7..9 the same as 6. Also,\n AOM_USAGE_REALTIME treats 0..4 the same as 5."]
 pub const AOME_SET_CPUUSED: aome_enc_control_id = 13;
 #[doc = "Codec control function to enable automatic set and use alf frames,\n unsigned int parameter\n\n - 0 = disable\n - 1 = enable (default)"]
 pub const AOME_SET_ENABLEAUTOALTREF: aome_enc_control_id = 14;
-#[doc = "Codec control function to set the sharpness parameter,\n unsigned int parameter.\n\n This parameter controls the level at which rate-distortion optimization of\n transform coefficients favours sharpness in the block.\n\n Valid range: 0..7. The default is 0. Values 1-7 will avoid eob and skip\n block optimization and will change rdmult in favour of block sharpness."]
+#[doc = "Codec control function to set the sharpness parameter,\n unsigned int parameter.\n\n This parameter controls the level at which rate-distortion optimization of\n transform coefficients favors sharpness in the block.\n\n Valid range: 0..7. The default is 0.\n\n Values 1-7 will avoid eob and skip block optimization and will change\n rdmult in favor of block sharpness.\n\n In all-intra mode: it also sets the `loop_filter_sharpness` syntax element\n in the bitstream. Larger values increasingly reduce how much the filtering\n can change the sample values on block edges to favor perceived sharpness."]
 pub const AOME_SET_SHARPNESS: aome_enc_control_id = 16;
 #[doc = "Codec control function to set the threshold for MBs treated static,\n unsigned int parameter"]
 pub const AOME_SET_STATIC_THRESHOLD: aome_enc_control_id = 17;
@@ -1496,7 +1499,7 @@ pub const AOME_SET_TUNING: aome_enc_control_id = 24;
 pub const AOME_SET_CQ_LEVEL: aome_enc_control_id = 25;
 #[doc = "Codec control function to set max data rate for intra frames,\n unsigned int parameter\n\n This value controls additional clamping on the maximum size of a\n keyframe. It is expressed as a percentage of the average\n per-frame bitrate, with the special (and default) value 0 meaning\n unlimited, or no additional clamping beyond the codec's built-in\n algorithm.\n\n For example, to allocate no more than 4.5 frames worth of bitrate\n to a keyframe, set this to 450."]
 pub const AOME_SET_MAX_INTRA_BITRATE_PCT: aome_enc_control_id = 26;
-#[doc = "Codec control function to set number of spatial layers, int\n parameter"]
+#[doc = "Codec control function to set number of spatial layers, int\n parameter\n\n Valid range:\n   \\li When using #AV1E_SET_SVC_REF_FRAME_CONFIG: [1, #AOM_MAX_SS_LAYERS]\n   \\li When \\em not using #AV1E_SET_SVC_REF_FRAME_CONFIG: [1, 3]"]
 pub const AOME_SET_NUMBER_SPATIAL_LAYERS: aome_enc_control_id = 27;
 #[doc = "Codec control function to set max data rate for inter frames,\n unsigned int parameter\n\n This value controls additional clamping on the maximum size of an\n inter frame. It is expressed as a percentage of the average\n per-frame bitrate, with the special (and default) value 0 meaning\n unlimited, or no additional clamping beyond the codec's built-in\n algorithm.\n\n For example, to allow no more than 4.5 frames worth of bitrate\n to an inter frame, set this to 450."]
 pub const AV1E_SET_MAX_INTER_BITRATE_PCT: aome_enc_control_id = 28;
@@ -1556,7 +1559,7 @@ pub const AV1E_GET_SEQ_LEVEL_IDX: aome_enc_control_id = 55;
 pub const AV1E_SET_SUPERBLOCK_SIZE: aome_enc_control_id = 56;
 #[doc = "Codec control function to enable automatic set and use of\n bwd-pred frames, unsigned int parameter\n\n - 0 = disable (default)\n - 1 = enable"]
 pub const AOME_SET_ENABLEAUTOBWDREF: aome_enc_control_id = 57;
-#[doc = "Codec control function to encode with CDEF, unsigned int parameter\n\n CDEF is the constrained directional enhancement filter which is an\n in-loop filter aiming to remove coding artifacts\n\n - 0 = disable\n - 1 = enable for all frames (default)\n - 2 = disable for non-reference frames"]
+#[doc = "Codec control function to encode with CDEF, unsigned int parameter\n\n CDEF is the constrained directional enhancement filter which is an\n in-loop filter aiming to remove coding artifacts\n\n - 0 = disable\n - 1 = enable for all frames (default)\n - 2 = disable for non-reference frames\n - 3 = enable adaptively based on frame qindex"]
 pub const AV1E_SET_ENABLE_CDEF: aome_enc_control_id = 58;
 #[doc = "Codec control function to encode with Loop Restoration Filter,\n unsigned int parameter\n\n - 0 = disable\n - 1 = enable (default)\n\n \\note Excluded from CONFIG_REALTIME_ONLY build."]
 pub const AV1E_SET_ENABLE_RESTORATION: aome_enc_control_id = 59;
@@ -1568,9 +1571,9 @@ pub const AV1E_SET_ENABLE_OBMC: aome_enc_control_id = 61;
 pub const AV1E_SET_DISABLE_TRELLIS_QUANT: aome_enc_control_id = 62;
 #[doc = "Codec control function to encode with quantisation matrices,\n unsigned int parameter\n\n AOM can operate with default quantisation matrices dependent on\n quantisation level and block type.\n\n - 0 = disable (default)\n - 1 = enable"]
 pub const AV1E_SET_ENABLE_QM: aome_enc_control_id = 63;
-#[doc = "Codec control function to set the min quant matrix flatness,\n unsigned int parameter\n\n AOM can operate with different ranges of quantisation matrices.\n As quantisation levels increase, the matrices get flatter. This\n control sets the minimum level of flatness from which the matrices\n are determined.\n\n By default, the encoder sets this minimum at half the available\n range."]
+#[doc = "Codec control function to set the min quant matrix flatness,\n unsigned int parameter\n\n AOM can operate with different ranges of quantisation matrices.\n As quantisation levels increase, the matrices get flatter. This\n control sets the minimum level of flatness from which the matrices\n are determined.\n\n By default, the encoder sets this minimum at level 5 (4 in all intra\n mode)."]
 pub const AV1E_SET_QM_MIN: aome_enc_control_id = 64;
-#[doc = "Codec control function to set the max quant matrix flatness,\n unsigned int parameter\n\n AOM can operate with different ranges of quantisation matrices.\n As quantisation levels increase, the matrices get flatter. This\n control sets the maximum level of flatness possible.\n\n By default, the encoder sets this maximum at the top of the\n available range."]
+#[doc = "Codec control function to set the max quant matrix flatness,\n unsigned int parameter\n\n AOM can operate with different ranges of quantisation matrices.\n As quantisation levels increase, the matrices get flatter. This\n control sets the maximum level of flatness possible.\n\n By default, the encoder sets this maximum at level 9 (10 in all intra\n mode)"]
 pub const AV1E_SET_QM_MAX: aome_enc_control_id = 65;
 #[doc = "Codec control function to set the min quant matrix flatness,\n unsigned int parameter\n\n AOM can operate with different ranges of quantisation matrices.\n As quantisation levels increase, the matrices get flatter. This\n control sets the flatness for luma (Y).\n\n By default, the encoder sets this minimum at half the available\n range."]
 pub const AV1E_SET_QM_Y: aome_enc_control_id = 66;
@@ -1650,7 +1653,7 @@ pub const AV1E_SET_ENABLE_PALETTE: aome_enc_control_id = 104;
 pub const AV1E_SET_ENABLE_INTRABC: aome_enc_control_id = 105;
 #[doc = "Codec control function to turn on/off intra angle delta, int\nparameter"]
 pub const AV1E_SET_ENABLE_ANGLE_DELTA: aome_enc_control_id = 106;
-#[doc = "Codec control function to set the delta q mode, unsigned int\n parameter\n\n AV1 supports a delta q mode feature, that allows modulating q per\n superblock.\n\n - 0 = deltaq signaling off\n - 1 = use modulation to maximize objective quality (default)\n - 2 = use modulation for local test\n - 3 = use modulation for key frame perceptual quality optimization\n - 4 = use modulation for user rating based perceptual quality optimization"]
+#[doc = "Codec control function to set the delta q mode, unsigned int\n parameter\n\n AV1 supports a delta q mode feature, that allows modulating q per\n superblock.\n\n - 0 = deltaq signaling off\n - 1 = use modulation to maximize objective quality (default)\n - 2 = use modulation for local test\n - 3 = use modulation for key frame perceptual quality optimization\n - 4 = use modulation for user rating based perceptual quality optimization\n - 5 = use modulation for HDR video\n - 6 = use modulation for all intra using Variance Boost\n\n \\attention Delta q modes 1-5 are unsupported and are silently ignored in\n non-RD mode. Non-RD mode is enabled by setting cpu-used >= 8 (all intra\n usage) and cpu-used >= 7 (realtime usage)."]
 pub const AV1E_SET_DELTAQ_MODE: aome_enc_control_id = 107;
 #[doc = "Codec control function to turn on/off loopfilter modulation\n when delta q modulation is enabled, unsigned int parameter.\n\n \\attention AV1 only supports loopfilter modulation when delta q\n modulation is enabled as well."]
 pub const AV1E_SET_DELTALF_MODE: aome_enc_control_id = 108;
@@ -1732,7 +1735,7 @@ pub const AV1E_SET_ENABLE_DIRECTIONAL_INTRA: aome_enc_control_id = 145;
 pub const AV1E_SET_ENABLE_TX_SIZE_SEARCH: aome_enc_control_id = 146;
 #[doc = "Codec control function to set reference frame compound prediction.\n aom_svc_ref_frame_comp_pred_t* parameter"]
 pub const AV1E_SET_SVC_REF_FRAME_COMP_PRED: aome_enc_control_id = 147;
-#[doc = "Set --deltaq-mode strength.\n\n Valid range: [0, 1000]"]
+#[doc = "Set --deltaq-mode strength, where the value is a percentage,\n unsigned int parameter.\n\n Valid range: [0, 1000]"]
 pub const AV1E_SET_DELTAQ_STRENGTH: aome_enc_control_id = 148;
 #[doc = "Codec control to control loop filter\n\n - 0 = Loop filter is disabled for all frames\n - 1 = Loop filter is enabled for all frames\n - 2 = Loop filter is disabled for non-reference frames\n - 3 = Loop filter is disabled for the frames with low motion"]
 pub const AV1E_SET_LOOPFILTER_CONTROL: aome_enc_control_id = 149;
@@ -1776,6 +1779,12 @@ pub const AV1E_GET_HIGH_MOTION_CONTENT_SCREEN_RTC: aome_enc_control_id = 167;
 pub const AV1E_SET_POSTENCODE_DROP_RTC: aome_enc_control_id = 168;
 #[doc = "Codec control to set the maximum number of consecutive frame drops,\n in units of time (milliseconds), allowed for the frame dropper in 1 pass\n CBR mode, int parameter. Value of zero has no effect."]
 pub const AV1E_SET_MAX_CONSEC_FRAME_DROP_MS_CBR: aome_enc_control_id = 169;
+#[doc = "Codec control to enable the low complexity decode mode, unsigned\n int parameter. Value of zero means this mode is disabled."]
+pub const AV1E_SET_ENABLE_LOW_COMPLEXITY_DECODE: aome_enc_control_id = 170;
+#[doc = "Codec control to set the screen content detection mode,\n aom_screen_detection_mode parameter.\n\n - 1: AOM_SCREEN_DETECTION_STANDARD = standard (default)\n - 2: AOM_SCREEN_DETECTION_ANTIALIASING_AWARE = anti-aliased text and\n   graphics aware"]
+pub const AV1E_SET_SCREEN_CONTENT_DETECTION_MODE: aome_enc_control_id = 171;
+#[doc = "Codec control to enable adaptive sharpness, which modulates\n sharpness based on frame QP, unsigned int parameter.\n\n Adaptive sharpness helps mitigate blocking artifacts in the low to medium\n quality range.\n\n - 0 = disable (default)\n - 1 = enable\n\n \\note When adaptive sharpness is enabled, AOME_SET_SHARPNESS acts as a\n \"maximum sharpness\" value. Adaptive sharpness can still modulate effective\n sharpness between 0 and the maximum sharpness. As a consequence, adaptive\n sharpness only has effects when sharpness is greater than 0."]
+pub const AV1E_SET_ENABLE_ADAPTIVE_SHARPNESS: aome_enc_control_id = 172;
 #[doc = "AVx encoder control functions\n\n This set of macros define the control functions available for AVx\n encoder interface.\n The range of encode control ID is 7-229(max).\n\n \\sa #aom_codec_control(aom_codec_ctx_t *ctx, int ctrl_id, ...)"]
 pub type aome_enc_control_id = ::std::os::raw::c_uint;
 pub const AOME_NORMAL: aom_scaling_mode_1d = 0;
@@ -1791,11 +1800,13 @@ pub const AOME_ONETHREE: aom_scaling_mode_1d = 8;
 pub type aom_scaling_mode_1d = ::std::os::raw::c_uint;
 #[doc = "aom 1-D scaling mode\n\n This set of constants define 1-D aom scaling modes"]
 pub use self::aom_scaling_mode_1d as AOM_SCALING_MODE;
-#[doc = " aom region of interest map\n\n These defines the data structures for the region of interest map\n\n TODO(yaowu): create a unit test for ROI map related APIs\n"]
+#[doc = " aom region of interest map\n\n These defines the data structures for the region of interest map"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct aom_roi_map {
-    #[doc = " An id between 0 and 7 for each 8x8 region within a frame."]
+    #[doc = " If ROI is enabled."]
+    pub enabled: u8,
+    #[doc = " An id between 0 and 7 for each 4x4 region within a frame."]
     pub roi_map: *mut ::std::os::raw::c_uchar,
     #[doc = "Number of rows."]
     pub rows: ::std::os::raw::c_uint,
@@ -1805,10 +1816,18 @@ pub struct aom_roi_map {
     pub delta_q: [::std::os::raw::c_int; 8usize],
     #[doc = "Loop filter deltas."]
     pub delta_lf: [::std::os::raw::c_int; 8usize],
-    #[doc = " Static breakout threshold for each segment."]
-    pub static_threshold: [::std::os::raw::c_uint; 8usize],
+    #[doc = "Skip this block."]
+    pub skip: [::std::os::raw::c_int; 8usize],
+    #[doc = "Reference frame for this block."]
+    pub ref_frame: [::std::os::raw::c_int; 8usize],
+    #[doc = "Delta qp feature enabled."]
+    pub delta_qp_enabled: ::std::os::raw::c_int,
+    #[doc = "Reference frame feature enabled."]
+    pub reference_enabled: ::std::os::raw::c_int,
+    #[doc = "RD mult for delta qp feature."]
+    pub rdmult_delta_qp: ::std::os::raw::c_int,
 }
-#[doc = " aom region of interest map\n\n These defines the data structures for the region of interest map\n\n TODO(yaowu): create a unit test for ROI map related APIs\n"]
+#[doc = " aom region of interest map\n\n These defines the data structures for the region of interest map"]
 pub type aom_roi_map_t = aom_roi_map;
 #[doc = " aom active region map\n\n These defines the data structures for active region map\n"]
 #[repr(C)]
@@ -1838,12 +1857,18 @@ pub const AOM_CONTENT_DEFAULT: aom_tune_content = 0;
 pub const AOM_CONTENT_SCREEN: aom_tune_content = 1;
 pub const AOM_CONTENT_FILM: aom_tune_content = 2;
 pub const AOM_CONTENT_INVALID: aom_tune_content = 3;
-#[doc = "brief AV1 encoder content type"]
+#[doc = "AV1 encoder content type"]
 pub type aom_tune_content = ::std::os::raw::c_uint;
+#[doc = " Standard"]
+pub const AOM_SCREEN_DETECTION_STANDARD: aom_screen_detection_mode = 1;
+#[doc = " Anti-aliased text and graphics aware"]
+pub const AOM_SCREEN_DETECTION_ANTIALIASING_AWARE: aom_screen_detection_mode = 2;
+#[doc = "Screen content detection mode"]
+pub type aom_screen_detection_mode = ::std::os::raw::c_uint;
 pub const AOM_TIMING_UNSPECIFIED: aom_timing_info_type_t = 0;
 pub const AOM_TIMING_EQUAL: aom_timing_info_type_t = 1;
 pub const AOM_TIMING_DEC_MODEL: aom_timing_info_type_t = 2;
-#[doc = "brief AV1 encoder timing info type signaling"]
+#[doc = "AV1 encoder timing info type signaling"]
 pub type aom_timing_info_type_t = ::std::os::raw::c_uint;
 pub const AOM_TUNE_PSNR: aom_tune_metric = 0;
 pub const AOM_TUNE_SSIM: aom_tune_metric = 1;
@@ -1853,13 +1878,15 @@ pub const AOM_TUNE_VMAF_MAX_GAIN: aom_tune_metric = 6;
 pub const AOM_TUNE_VMAF_NEG_MAX_GAIN: aom_tune_metric = 7;
 pub const AOM_TUNE_BUTTERAUGLI: aom_tune_metric = 8;
 pub const AOM_TUNE_VMAF_SALIENCY_MAP: aom_tune_metric = 9;
-#[doc = "Model tuning parameters\n\n Changes the encoder to tune for certain types of input material.\n"]
+pub const AOM_TUNE_IQ: aom_tune_metric = 10;
+pub const AOM_TUNE_SSIMULACRA2: aom_tune_metric = 11;
+#[doc = "Model tuning parameters\n\n Changes the encoder to tune for certain types of input material.\n\n \\note\n AOM_TUNE_IQ and AOM_TUNE_SSIMULACRA2 are restricted to all intra mode\n (AOM_USAGE_ALL_INTRA). Setting the tuning option to either AOM_TUNE_IQ or\n AOM_TUNE_SSIMULACRA2 causes the following options to be set (expressed as\n command-line options):\n   * --enable-qm=1\n   * --qm-min=2\n   * --qm-max=10\n   * --sharpness=7\n   * --dist-metric=qm-psnr\n   * --enable-cdef=3\n   * --enable-chroma-deltaq=1\n   * --deltaq-mode=6\n   * --screen-detection-mode=2\n AOM_TUNE_IQ additionally sets the following options:\n   * --enable-adaptive-sharpness=1"]
 pub type aom_tune_metric = ::std::os::raw::c_uint;
 pub const AOM_DIST_METRIC_PSNR: aom_dist_metric = 0;
 pub const AOM_DIST_METRIC_QM_PSNR: aom_dist_metric = 1;
 #[doc = "Distortion metric to use for RD optimization.\n\n Changes the encoder to use a different distortion metric for RD search. Note\n that this value operates on a \"lower level\" compared to aom_tune_metric - it\n affects the distortion metric inside a block, while aom_tune_metric only\n affects RD across blocks.\n"]
 pub type aom_dist_metric = ::std::os::raw::c_uint;
-#[doc = "brief Struct for spatial and temporal layer ID"]
+#[doc = "Struct for spatial and temporal layer ID"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct aom_svc_layer_id {
@@ -1868,15 +1895,15 @@ pub struct aom_svc_layer_id {
     #[doc = "Temporal layer ID"]
     pub temporal_layer_id: ::std::os::raw::c_int,
 }
-#[doc = "brief Struct for spatial and temporal layer ID"]
+#[doc = "Struct for spatial and temporal layer ID"]
 pub type aom_svc_layer_id_t = aom_svc_layer_id;
-#[doc = "brief Parameter type for SVC\n\n In the arrays of size AOM_MAX_LAYERS, the index for spatial layer `sl` and\n temporal layer `tl` is sl * number_temporal_layers + tl.\n"]
+#[doc = "Parameter type for SVC\n\n In the arrays of size AOM_MAX_LAYERS, the index for spatial layer `sl` and\n temporal layer `tl` is sl * number_temporal_layers + tl.\n"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct aom_svc_params {
-    #[doc = "Number of spatial layers"]
+    #[doc = "Number of spatial layers\n\n Valid range:\n   \\li When using #AV1E_SET_SVC_REF_FRAME_CONFIG: [1, #AOM_MAX_SS_LAYERS]\n   \\li When \\em not using #AV1E_SET_SVC_REF_FRAME_CONFIG: [1, 3]"]
     pub number_spatial_layers: ::std::os::raw::c_int,
-    #[doc = "Number of temporal layers"]
+    #[doc = "Number of temporal layers\n\n Valid range:\n   \\li When using #AV1E_SET_SVC_REF_FRAME_CONFIG: [1, #AOM_MAX_TS_LAYERS]\n   \\li When \\em not using #AV1E_SET_SVC_REF_FRAME_CONFIG: [1, 3]"]
     pub number_temporal_layers: ::std::os::raw::c_int,
     #[doc = "Max Q for each layer"]
     pub max_quantizers: [::std::os::raw::c_int; 32usize],
@@ -1891,9 +1918,9 @@ pub struct aom_svc_params {
     #[doc = " Frame rate factor for each temporal layer"]
     pub framerate_factor: [::std::os::raw::c_int; 8usize],
 }
-#[doc = "brief Parameter type for SVC\n\n In the arrays of size AOM_MAX_LAYERS, the index for spatial layer `sl` and\n temporal layer `tl` is sl * number_temporal_layers + tl.\n"]
+#[doc = "Parameter type for SVC\n\n In the arrays of size AOM_MAX_LAYERS, the index for spatial layer `sl` and\n temporal layer `tl` is sl * number_temporal_layers + tl.\n"]
 pub type aom_svc_params_t = aom_svc_params;
-#[doc = "brief Parameters for setting ref frame config"]
+#[doc = "Parameters for setting ref frame config"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct aom_svc_ref_frame_config {
@@ -1904,22 +1931,22 @@ pub struct aom_svc_ref_frame_config {
     #[doc = "Refresh flag for each of the 8 buffer slots."]
     pub refresh: [::std::os::raw::c_int; 8usize],
 }
-#[doc = "brief Parameters for setting ref frame config"]
+#[doc = "Parameters for setting ref frame config"]
 pub type aom_svc_ref_frame_config_t = aom_svc_ref_frame_config;
-#[doc = "brief Parameters for setting ref frame compound prediction"]
+#[doc = "Parameters for setting ref frame compound prediction"]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct aom_svc_ref_frame_comp_pred {
     #[doc = "<Compound reference flag."]
     pub use_comp_pred: [::std::os::raw::c_int; 3usize],
 }
-#[doc = "brief Parameters for setting ref frame compound prediction"]
+#[doc = "Parameters for setting ref frame compound prediction"]
 pub type aom_svc_ref_frame_comp_pred_t = aom_svc_ref_frame_comp_pred;
 #[doc = "Any spatial layer can drop."]
 pub const AOM_LAYER_DROP: AOM_SVC_FRAME_DROP_MODE = 0;
 #[doc = "Only full superframe can drop."]
 pub const AOM_FULL_SUPERFRAME_DROP: AOM_SVC_FRAME_DROP_MODE = 1;
-#[doc = "brief Frame drop modes for spatial/quality layer SVC"]
+#[doc = "Frame drop modes for spatial/quality layer SVC"]
 pub type AOM_SVC_FRAME_DROP_MODE = ::std::os::raw::c_uint;
 #[doc = "\\cond */\n/*!Encoder control function parameter type\n\n Defines the data types that AOME/AV1E control functions take.\n\n \\note Additional common controls are defined in aom.h.\n\n \\note For each control ID \"X\", a macro-define of\n AOM_CTRL_X is provided. It is used at compile time to determine\n if the control ID is supported by the libaom library available,\n when the libaom version cannot be controlled."]
 pub type aom_codec_control_type_AOME_USE_REFERENCE = ::std::os::raw::c_int;
@@ -2081,6 +2108,9 @@ pub type aom_codec_control_type_AV1E_GET_HIGH_MOTION_CONTENT_SCREEN_RTC =
     *mut ::std::os::raw::c_int;
 pub type aom_codec_control_type_AV1E_SET_POSTENCODE_DROP_RTC = ::std::os::raw::c_int;
 pub type aom_codec_control_type_AV1E_SET_MAX_CONSEC_FRAME_DROP_MS_CBR = ::std::os::raw::c_int;
+pub type aom_codec_control_type_AV1E_SET_ENABLE_LOW_COMPLEXITY_DECODE = ::std::os::raw::c_uint;
+pub type aom_codec_control_type_AV1E_SET_SCREEN_CONTENT_DETECTION_MODE = ::std::os::raw::c_int;
+pub type aom_codec_control_type_AV1E_SET_ENABLE_ADAPTIVE_SHARPNESS = ::std::os::raw::c_uint;
 unsafe extern "C" {
     #[doc = "A single instance of the AV1 decoder.\n\\deprecated This access mechanism is provided for backwards compatibility;\n prefer aom_codec_av1_dx()."]
     pub static mut aom_codec_av1_dx_algo: aom_codec_iface_t;
