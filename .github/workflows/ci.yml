@@ -12,7 +12,7 @@ env:
 jobs:
   rustfmt:
     name: rustfmt / linux / stable
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -30,7 +30,7 @@ jobs:
 
   clippy:
     name: clippy / linux / stable
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -54,7 +54,7 @@ jobs:
 
   test:
     name: test / ${{ matrix.name }}
-    runs-on: ${{ matrix.os || 'ubuntu-22.04' }}
+    runs-on: ${{ matrix.os || 'ubuntu-24.04' }}
 
     strategy:
       fail-fast: false
@@ -90,7 +90,7 @@ jobs:
             features: '--no-default-features --features codec-aom'
             target: x86_64-pc-windows-msvc
           - name: wasm / nightly codec-aom
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             target: 'wasm32-unknown-emscripten'
             features: '--no-default-features --features codec-aom'
           - name: wasm-macos / stable codec-aom
@@ -110,7 +110,7 @@ jobs:
           submodules: true
 
       - name: Install dependencies (linux)
-        if: (matrix.os || 'ubuntu-22.04') == 'ubuntu-22.04'
+        if: (matrix.os || 'ubuntu-24.04') == 'ubuntu-24.04'
         run: |
           DEBIAN_FRONTEND=noninteractive sudo apt-get update
           DEBIAN_FRONTEND=noninteractive sudo apt-get install -y ninja-build nasm meson
@@ -119,7 +119,7 @@ jobs:
         if: matrix.os == 'macOS-13'
         run: |
           brew install ninja nasm meson
-      
+
       - name: Install emcc
         if: matrix.target == 'wasm32-unknown-emscripten' && contains(matrix.os, 'macOS')
         run: brew install emscripten
@@ -163,7 +163,7 @@ jobs:
           cargo test ${{ matrix.features }} --target ${{ matrix.target }}
 
       - name: Check wasm
-        if: matrix.target == 'wasm32-unknown-emscripten' && matrix.os == 'ubuntu-22.04'
+        if: matrix.target == 'wasm32-unknown-emscripten' && matrix.os == 'ubuntu-24.04'
         run: |
           export EMSCRIPTEN_CMAKE_FILE="/usr/share/emscripten/cmake/Modules/Platform/Emscripten.cmake"
           cargo check ${{ matrix.features }} --target ${{ matrix.target }}
@@ -196,4 +196,3 @@ jobs:
           CXXFLAGS: "--target=wasm32-wasi-threads -pthread --sysroot=${{ github.workspace }}/wasi-sdk-21.0/share/wasi-sysroot"
           LDFLAGS: "-fuse-ld=${{ github.workspace }}/wasi-sdk-21.0/bin/wasm-ld --target=wasm32-wasi-threads"
           CARGO_TARGET_WASM32_WASI_PREVIEW1_THREADS_LINKER: "${{ github.workspace }}/wasi-sdk-21.0/bin/wasm-ld"
-
