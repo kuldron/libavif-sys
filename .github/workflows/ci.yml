@@ -83,10 +83,10 @@ jobs:
             features: '--no-default-features --features codec-aom'
             target: x86_64-apple-darwin
           - name: windows / stable
-            os: windows-2019
+            os: windows-2025
             target: x86_64-pc-windows-msvc
           - name: windows / stable codec-aom
-            os: windows-2019
+            os: windows-2025
             features: '--no-default-features --features codec-aom'
             target: x86_64-pc-windows-msvc
           - name: wasm / nightly codec-aom
@@ -131,7 +131,7 @@ jobs:
           DEBIAN_FRONTEND=noninteractive sudo apt-get install emscripten
 
       - name: Install dependencies (windows)
-        if: matrix.os == 'windows-2019'
+        if: matrix.os == 'windows-2025'
         run: |
           choco install ninja -y --no-progress
           choco install python --version 3.13.1 -y --no-progress
@@ -140,7 +140,7 @@ jobs:
           pip install meson
 
       - name: Install nasm (windows)
-        if: matrix.os == 'windows-2019'
+        if: matrix.os == 'windows-2025'
         uses: ilammy/setup-nasm@v1
 
       - name: Install rust
@@ -150,15 +150,15 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Test (Windows)
-        if: matrix.os == 'windows-2019'
+        if: matrix.os == 'windows-2025'
         shell: cmd
         run: |
-          call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+          call "C:/Program Files (x86)/Microsoft Visual Studio/2025/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           set PATH=C:\Python313\Scripts;C:\Python313;%PATH%
           cargo test ${{ matrix.features }} --target ${{ matrix.target }}
 
       - name: Test (Linux, macOS)
-        if: ${{ matrix.os != 'windows-2019' && !contains(matrix.target, 'wasm') }}
+        if: ${{ matrix.os != 'windows-2025' && !contains(matrix.target, 'wasm') }}
         run: |
           cargo test ${{ matrix.features }} --target ${{ matrix.target }}
 
