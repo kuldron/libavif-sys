@@ -1,0 +1,60 @@
+# Gates the feature set kuldron/api actually consumes.
+#
+# Upstream's ci.yml covers the crate's full matrix, but forking disables inherited
+# workflows, so nothing ran on this repo until this file existed. It is deliberately
+# narrow: the point is that fmt, clippy and the round-trip tests run on every push,
+# not that every upstream configuration is exercised.
+#
+# GitHub-hosted rather than the self-hosted runners the deployable repos use: this
+# is a vendored third-party fork with no deploy and no access to secrets, and the
+# C build needs cmake/nasm/meson/ninja rather than the baked-in kuldron toolchain.
+name: Kuldron gates
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+# The default token is read-only, but declare it rather than inherit it.
+permissions:
+  contents: read
+
+env:
+  RUST_BACKTRACE: full
+  # Must match the features api enables, or the gate proves nothing about what ships.
+  AVIF_FEATURES: codec-rav1e,codec-dav1d
+
+jobs:
+  gates:
+    name: fmt / clippy / test
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # Only the two submodules our feature set needs. `submodules: recursive`
+      # would also clone libaom, which is large and unused here.
+      - name: Fetch libavif and dav1d sources
+        run: git submodule update --init libavif-sys/libavif libdav1d-sys/vendor
+
+      - name: Install C build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake nasm meson ninja-build
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: rustfmt
+        run: cargo fmt --check
+
+      # Denies warnings across the workspace's build scripts too: a dependency
+      # build script's lint fails the gate regardless of package scoping.
+      - name: clippy
+        run: cargo clippy -p libavif-sys --no-default-features --features "$AVIF_FEATURES" --all-targets -- -D warnings
+
+      # The round trip is the only check that the codecs are genuinely compiled
+      # in. libavif's cmake options silently disable a codec given a value it does
+      # not recognise, in a build that still succeeds.
+      - name: test
+        run: cargo test -p libavif-sys --no-default-features --features "$AVIF_FEATURES"
