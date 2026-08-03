@@ -1,0 +1,17 @@
+[binaries]
+c = ['clang', '-arch', 'x86_64']
+cpp = ['clang++', '-arch', 'x86_64']
+ar = 'ar'
+strip = 'strip'
+
+[built-in options]
+c_args = ['-arch', 'x86_64']
+c_link_args = ['-arch', 'x86_64']
+cpp_args = ['-arch', 'x86_64']
+cpp_link_args = ['-arch', 'x86_64']
+
+[host_machine]
+system = 'darwin'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'

@@ -29,6 +29,13 @@ fn main() {
             .arg("--cross-file")
             .arg("aarch64-unknown-linux-gnu.meson");
     }
+    // An x86_64 macOS target is a cross build on an arm64 host even though the
+    // system matches, and meson infers the machine from the host rather than from
+    // the Rust target. Without this it builds dav1d for the host architecture and
+    // the link fails with symbols missing for the target architecture.
+    if target == "x86_64-apple-darwin" && env::var("HOST").as_deref() != Ok(target.as_str()) {
+        meson.arg("--cross-file").arg("x86_64-apple-darwin.meson");
+    }
     if target == "wasm32-unknown-emscripten" {
         meson
             .arg("--cross-file")
