@@ -96,7 +96,7 @@ fn main() {
             if target == "armv7-unknown-linux-gnueabihf" {
                 aom.define(
                     "CMAKE_TOOLCHAIN_FILE",
-                    "build/cmake/toolchains/armv7-linux-gcc.cmake",
+                    "cmake/toolchains/armv7-linux-gcc.cmake",
                 );
             }
             if target.contains("ohos") {
