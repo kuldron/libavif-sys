@@ -27,11 +27,20 @@ fn main() {
         avif.very_verbose(true);
     }
 
+    // libavif 1.2.0 made the codec options tri-state, accepting SYSTEM, LOCAL or
+    // OFF. `check_avif_option` enables a codec only for SYSTEM or LOCAL, so the
+    // "1" these options previously took now leaves the codec disabled while the
+    // build still succeeds. The resulting library reports
+    // AVIF_RESULT_NO_CODEC_AVAILABLE at runtime.
+    //
+    // SYSTEM rather than LOCAL because the codec artefacts are already built by
+    // the sibling -sys crates and located through the include, library and
+    // pkg-config paths set below; LOCAL would fetch and build a second copy.
     #[cfg(feature = "codec-aom")]
     {
         let include =
             env::var_os("DEP_AOM_INCLUDE").expect("libaom-sys should have set include path");
-        avif.define("AVIF_CODEC_AOM", "1");
+        avif.define("AVIF_CODEC_AOM", "SYSTEM");
         avif.define("AOM_INCLUDE_DIR", include);
 
         let pc_path =
@@ -49,7 +58,7 @@ fn main() {
         fs::copy(crate_dir.join("rav1e.h"), rav1e_include_dir.join("rav1e.h"))
             .expect("copy rav1e.h");
 
-        avif.define("AVIF_CODEC_RAV1E", "1")
+        avif.define("AVIF_CODEC_RAV1E", "SYSTEM")
             .define("AVIF_CODEC_LIBRARIES", "rav1e")
             // required by `emcmake cmake`
             .define("RAV1E_INCLUDE_DIR", rav1e_include_dir)
@@ -60,7 +69,7 @@ fn main() {
     {
         let include =
             env::var_os("DEP_DAV1D_INCLUDE").expect("libdav1d-sys should have set pkgconfig path");
-        avif.define("AVIF_CODEC_DAV1D", "1");
+        avif.define("AVIF_CODEC_DAV1D", "SYSTEM");
         avif.define("DAV1D_INCLUDE_DIR", include);
 
         if let Some(pc_path) = env::var_os("DEP_DAV1D_PKGCONFIG") {
