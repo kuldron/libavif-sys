@@ -21,6 +21,13 @@ fn main() {
     if target == "i686-pc-windows-msvc" {
         meson.arg("--cross-file").arg("i686-win-msvc.meson");
     }
+    // Windows images ship MinGW alongside MSVC, and meson picks the compiler it
+    // finds rather than the one matching the target. Building an MSVC target with
+    // gcc produces objects referencing the MinGW runtime, which link.exe then
+    // reports as unresolved __mingw_* and ___chkstk_ms symbols.
+    if target == "x86_64-pc-windows-msvc" {
+        meson.arg("--cross-file").arg("x86_64-win-msvc.meson");
+    }
     if target == "x86_64-pc-windows-gnu" {
         meson.arg("--cross-file").arg("x86_64-w64-mingw32.meson");
     }
