@@ -31,7 +31,7 @@ fn main() {
     {
         let include =
             env::var_os("DEP_AOM_INCLUDE").expect("libaom-sys should have set include path");
-        avif.define("AVIF_CODEC_AOM", "1");
+        avif.define("AVIF_CODEC_AOM", "SYSTEM");
         avif.define("AOM_INCLUDE_DIR", include);
 
         let pc_path =
@@ -49,7 +49,7 @@ fn main() {
         fs::copy(crate_dir.join("rav1e.h"), rav1e_include_dir.join("rav1e.h"))
             .expect("copy rav1e.h");
 
-        avif.define("AVIF_CODEC_RAV1E", "1")
+        avif.define("AVIF_CODEC_RAV1E", "SYSTEM")
             .define("AVIF_CODEC_LIBRARIES", "rav1e")
             // required by `emcmake cmake`
             .define("RAV1E_INCLUDE_DIR", rav1e_include_dir)
@@ -60,7 +60,7 @@ fn main() {
     {
         let include =
             env::var_os("DEP_DAV1D_INCLUDE").expect("libdav1d-sys should have set pkgconfig path");
-        avif.define("AVIF_CODEC_DAV1D", "1");
+        avif.define("AVIF_CODEC_DAV1D", "SYSTEM");
         avif.define("DAV1D_INCLUDE_DIR", include);
 
         if let Some(pc_path) = env::var_os("DEP_DAV1D_PKGCONFIG") {
@@ -78,15 +78,32 @@ fn main() {
 
     eprintln!("pc=\"{:?}\"", local_pc_files);
     avif.env("PKG_CONFIG_PATH", local_pc_files);
-    avif.define("CMAKE_DISABLE_FIND_PACKAGE_libsharpyuv", "1");
+    // libavif 1.2.0 replaced the CMAKE_DISABLE_FIND_PACKAGE_* mechanism with its own
+    // tri-state options taking SYSTEM / LOCAL / OFF, and errors out rather than
+    // defaulting when it cannot satisfy one. Two traps live here:
+    //
+    //  * The codec options above take the SAME tri-state. A legacy `=1` is neither
+    //    SYSTEM nor LOCAL, so `check_avif_option` leaves the codec DISABLED and the
+    //    build still succeeds -- a libavif with no codecs, failing only at runtime.
+    //  * LOCAL means "fetch and build it locally", i.e. network access during the
+    //    cmake configure step. That would break a hermetic container build, so every
+    //    optional dependency we do not need is OFF rather than LOCAL.
+    //
+    // libyuv OFF only loses libyuv's RGB<->YUV fast paths; it was already effectively
+    // off under the old CMAKE_DISABLE_FIND_PACKAGE_libyuv flag, so this preserves
+    // existing behaviour rather than regressing it. zlib/png and jpeg are needed only
+    // by the `avifenc`/`avifdec` apps, which this crate does not build.
+    avif.define("AVIF_LIBSHARPYUV", "OFF");
+    avif.define("AVIF_LIBYUV", "OFF");
+    avif.define("AVIF_ZLIBPNG", "OFF");
+    avif.define("AVIF_JPEG", "OFF");
 
     avif.profile(if env::var("PROFILE").expect("PROFILE") == "release" {
         "Release"
     } else {
         "Debug"
     })
-    .configure_arg("-DCMAKE_INSTALL_LIBDIR=lib")
-    .configure_arg("-DCMAKE_DISABLE_FIND_PACKAGE_libyuv=1");
+    .configure_arg("-DCMAKE_INSTALL_LIBDIR=lib");
     if env::var("LIBAVIF_CROSS_WIN32").is_ok() {
         avif.configure_arg("-T host=x64").configure_arg("-A Win32");
     }
